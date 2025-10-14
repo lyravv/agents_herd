@@ -1,0 +1,6 @@
+pymilvus
+requests
+
+[dev]
+pytest
+black
