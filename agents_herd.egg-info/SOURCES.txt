@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-agents_herd.egg-info/PKG-INFO
-agents_herd.egg-info/SOURCES.txt
-agents_herd.egg-info/dependency_links.txt
-agents_herd.egg-info/requires.txt
-agents_herd.egg-info/top_level.txt
-data/register_table_header.py
-models/llm.py
