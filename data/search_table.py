@@ -3,16 +3,20 @@ import os
 import argparse
 import requests
 from pymilvus import connections, Collection, utility
+from dotenv import load_dotenv
 
-# 配置参数
-MILVUS_URI = "http://10.50.56.243:19530"
-DB_NAME = "default"
-COLLECTION_NAME = "wangling_tables_header"
-EMBEDDING_SERVICE_URL = "http://10.50.60.21:12345/embed"
+# 加载环境变量
+load_dotenv()
+
+# 从环境变量获取配置
+MILVUS_HOST = os.getenv('MILVUS_HOST', '127.0.0.1')
+MILVUS_PORT = os.getenv('MILVUS_PORT', '19530')
+COLLECTION_NAME = os.getenv('MILVUS_COLLECTION_NAME', 'test')
+EMBEDDING_SERVICE_URL = os.getenv('EMBEDDING_SERVICE_URL', 'http://127.0.0.1:12345/embed')
 
 # 连接 Milvus
 def connect_to_milvus():
-    connections.connect(host='10.50.56.243', port='19530')
+    connections.connect(host=MILVUS_HOST, port=MILVUS_PORT)
     print("Connected to Milvus")
     
     if not utility.has_collection(COLLECTION_NAME):
