@@ -11,7 +11,7 @@
 | customer_name | 客户名称，销售合同签订的客户 |
 | total_amount | 合同总金额，销售合同的金额总和 |
 | sign_date | 签订日期，销售合同签订的日期 |
-| status | 状态，销售合同的当前状态，如active、expired等 |
+| status | 状态，销售合同的当前状态，可能的值包括：active（有效）、expired（已过期）、pending（待处理）、cancelled（已取消） |
 | version | 版本号，销售合同的版本号，用于跟踪更新 |
 | is_active | 是否有效，标识销售合同是否当前有效 |
 

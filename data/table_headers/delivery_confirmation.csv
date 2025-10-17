@@ -1,0 +1,5 @@
+delivery_id,shipment_id,receive_date,received_by,quantity_received,status
+DC20250315,SH20250310,2025-03-15,北京配送中心,200,confirmed
+DC20250520,SH20250515,2025-05-20,上海仓储中心,148,confirmed
+DC20251030,SH20251025,2025-10-30,广州物流中心,75,pending
+DC20251110,SH20251105,2025-11-10,深圳配送中心,120,confirmed

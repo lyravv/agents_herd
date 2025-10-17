@@ -12,7 +12,7 @@
 | receive_date | 接收日期，货物实际接收的日期 |
 | received_by | 接收人，接收货物的人员或单位名称 |
 | quantity_received | 接收数量，实际接收的货物数量 |
-| status | 状态，货物交付的确认状态，如pending、confirmed等 |
+| status | 状态，货物交付的确认状态，可能的值包括：pending（待确认）、confirmed（已确认）、rejected（已拒绝）、partial（部分接收） |
 
 # example
 | delivery_id | shipment_id | receive_date | received_by | quantity_received | status |

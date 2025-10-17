@@ -11,7 +11,7 @@
 | order_id | 关联的订单ID，外键，关联到销售订单表 |
 | request_date | 申请日期，发货申请的提交日期 |
 | quantity | 数量，申请发货的产品数量 |
-| status | 状态，发货申请的审批状态，如pending、approved等 |
+| status | 状态，发货申请的审批状态，可能的值包括：pending（待审批）、approved（已批准）、rejected（已拒绝）、completed（已完成） |
 
 # example
 | shipment_id | order_id | request_date | quantity | status |

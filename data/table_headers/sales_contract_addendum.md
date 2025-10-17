@@ -12,6 +12,7 @@
 | change_desc | 变更描述，详细说明补充合同的变更内容 |
 | change_amount | 变更金额，补充合同涉及的金额调整 |
 | created_at | 创建日期，补充合同的创建时间 |
+| status | 状态，补充合同的处理状态，可能的值包括：approved（已批准）、pending（待处理）、rejected（已拒绝）、cancelled（已取消） |
 
 # example
 | addendum_id | contract_id | change_desc | change_amount | created_at |

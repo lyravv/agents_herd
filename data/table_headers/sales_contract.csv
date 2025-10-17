@@ -1,0 +1,11 @@
+contract_id,customer_name,total_amount,sign_date,status,version,is_active
+SC20250301,北京智控科技,500000.00,2025-03-01,active,1,TRUE
+SC20250502,上海数联信息,750000.00,2025-05-05,active,1,TRUE
+SC20250503,广州科创电子,320000.00,2025-05-10,pending,1,FALSE
+SC20251004,深圳智能系统,980000.00,2025-10-15,active,2,TRUE
+SC20251005,杭州云计算,430000.00,2025-10-20,expired,1,FALSE
+SC20251006,南京网络科技,650000.00,2025-10-25,active,1,TRUE
+SC20251007,武汉数据服务,275000.00,2025-11-01,pending,1,FALSE
+SC20251009,天津智慧城市,560000.00,2025-11-10,active,1,TRUE
+SC20251008,成都软件开发,820000.00,2025-11-05,active,3,TRUE 
+SC20251010,重庆物联网络,390000.00,2025-11-15,expired,2,FALSE
