@@ -24,4 +24,4 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["data", "memory", "models"]
+packages = {find = {where = ["."], include = ["*"]}}
