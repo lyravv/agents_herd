@@ -1,5 +1,10 @@
 from utils.note_board import Whiteboard
 from tools.mcp_server import MCP
+from models.llm import get_llm_response_with_function_call
+import json
+
+# 获取全局共享的whiteboard实例
+whiteboard = Whiteboard.get_instance()
 
 master_agent_system_prompt = f"""
 你是一个工具调用专家。系统通过whiteboard向你呈现有用的信息。白板上可能包含用户的输入问题，记忆系统相关的参考经验，图谱上相关的节点、边等信息。
@@ -16,9 +21,10 @@ master_agent_prompt = f"""
 
 
 class MasterAgent:
-    def __init__(self, mcp: MCP, whiteboard: Whiteboard):
+    def __init__(self, mcp: MCP, whiteboard: Whiteboard = None):
         self.mcp = mcp
-        self.whiteboard = whiteboard
+        # 如果没有传入whiteboard，使用全局共享实例
+        self.whiteboard = whiteboard if whiteboard is not None else Whiteboard.get_instance()
 
     def step(self, thought: str) -> str:
         messages = [
@@ -48,21 +54,23 @@ class MasterAgent:
 
 if __name__ == "__main__":
     mcp = MCP()
-    whiteboard = Whiteboard()
-    master_agent = MasterAgent(mcp, whiteboard)
+    # 使用全局共享的whiteboard实例
+    shared_whiteboard = Whiteboard.get_instance()
+    master_agent = MasterAgent(mcp, shared_whiteboard)
     
     while True:
         query = input("用户query: ")
         if query.lower() == "exit":
             break
         
-        self.whiteboard.query({"content": query})
+        shared_whiteboard.user_input({"content": query})
 
-        experience = experience_match(query)
-        graph = graph_match(query)
+        # 这里需要实现experience_match和graph_match函数
+        # experience = experience_match(query)
+        # graph = graph_match(query)
         
-        self.whiteboard.experience({"content": experience})
-        self.whiteboard.graph({"content": graph})
+        # shared_whiteboard.experience_nld({"content": experience})
+        # shared_whiteboard.related_graph({"content": graph})
 
-        result = master_agent.solve()
+        result = master_agent.solve(query)
         print(result)

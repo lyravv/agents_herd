@@ -13,11 +13,34 @@ from pydantic import BaseModel, Field
 
 class Whiteboard(BaseModel):
     timeline: List[Dict[str, Any]] = Field(default_factory=list, description="按时间顺序存储所有事件")
+    
+    _instance = None
+    _initialized = False
+
+    def __new__(cls, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
     def __init__(self, **data):
-        super().__init__(**data)
-        if not hasattr(self, 'timeline') or self.timeline is None:
-            self.timeline = []
+        if not self._initialized:
+            super().__init__(**data)
+            if not hasattr(self, 'timeline') or self.timeline is None:
+                self.timeline = []
+            self._initialized = True
+    
+    @classmethod
+    def get_instance(cls):
+        """获取单例实例"""
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+    
+    @classmethod
+    def reset_instance(cls):
+        """重置单例实例（主要用于测试）"""
+        cls._instance = None
+        cls._initialized = False
 
     def user_input(self, content: Dict[str, Any]):
         self.add_entry("user_input", content)
