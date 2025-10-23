@@ -1,24 +1,74 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
+import os
+from datetime import datetime
 from fastmcp import FastMCP
-from utils.note_board import Whiteboard
+from utils.whiteboard import Whiteboard
 from models.llm import get_llm_response_gpt_4o
+
+
+
+def setup_logger():
+    """配置日志系统"""
+    # 创建logs目录
+    log_dir = "logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+    # 配置日志格式
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+    
+    # 创建logger
+    logger = logging.getLogger('mcp_server')
+    logger.setLevel(logging.INFO)
+    
+    # 避免重复添加handler
+    if not logger.handlers:
+        # 文件handler - 按日期命名
+        today = datetime.now().strftime('%Y%m%d')
+        file_handler = logging.FileHandler(f'{log_dir}/mcp_server_{today}.log', encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter(log_format))
+        
+        # 控制台handler
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(logging.Formatter(log_format))
+        
+        # 添加handlers
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
+    
+    return logger
+
+# 初始化logger
+logger = setup_logger()
 
 mcp = FastMCP("hgt2.0工具")
 
-# 获取全局共享的whiteboard实例
-whiteboard = Whiteboard.get_instance()
-
-@mcp.tool(name="think")
-def think_tool() -> str:
+@mcp.tool(name="think", exclude_args=["whiteboard_id"])
+def think_tool(whiteboard_id: str = "123") -> str:
     """
     用于显式思考和推理的工具，将思考过程（推理）、计划记录到白板上或更新白板上已有的思考或计划。
     阅读白板上的所有记录，包括系统的用户查询输入、参考经验、业务相关节点图谱、工具执行结果、已有思考结果等信息。进行显示的思考和推理，输出其过程。如遇复杂任务，生成执行计划。
     
     think工具函数本身无需输入和输出，阅读白板信息作为思考输入，生成思考结果写到白板作为输出。
     """
+    logger.info("开始执行think工具 - 思考和推理")
     
-    system_prompt = f"""你擅长问题推理和分析，能够清晰显示地分析用户查询问题。你需要使用白板上展示地用户问题、参考经验、业务相关节点图谱、工具执行结果、已有思考结果等信息，进行显示的思考和推理，输出其过程。如遇复杂任务，生成执行计划。
+    try:
+        # 获取当前whiteboard实例
+        whiteboard = Whiteboard(whiteboard_id)
+        
+        # 获取白板信息
+        whiteboard_info = whiteboard.read()
+        logger.info(f"获取白板信息成功，消息数量: {len(whiteboard_info)}")
+        
+        # 将whiteboard信息转换为字符串格式
+        whiteboard_info_str = json.dumps(whiteboard_info, ensure_ascii=False, indent=2)
+        
+        system_prompt = """你擅长问题推理和分析，能够清晰显示地分析用户查询问题。你需要使用白板上展示地用户问题、参考经验、业务相关节点图谱、工具执行结果、已有思考结果等信息，进行显示的思考和推理，输出其过程。如遇复杂任务，生成执行计划。
     ## 白板的字段解释
     input_query: 用户的原始查询问题
     experience_nld: 可能与用户查询问题相关的参考经验，自然语言描述
@@ -44,7 +94,7 @@ def think_tool() -> str:
     {
         "think_process": "用户想确认三月签署的北京智控科技的合同是否已完成收货。根据提供的经验知识和图谱关系，销售合同的收货确认需经过多个步骤：首先通过销售合同查询工具找到对应合同号；然后利用该合同号在销售订单查询工具中查找关联的销售订单；接着使用销售订单号在发货申请查询工具中查找对应的发货申请；最后通过发货申请号在确认收货查询工具中查看是否存在确认收货记录。因此，要回答用户问题，必须按此链路依次查询，确认是否存在最终的确认收货记录。",
         "plan": [
-        "[] 使用销售合同查询工具，输入条件\"客户名称：北京智控科技\"和\"签约时间：2025年3月\"，查询对应的销售合同号。",
+        "[] 使用销售合同查询工具，输入条件"客户名称：北京智控科技"和"签约时间：2025年3月"，查询对应的销售合同号。",
         "[] 使用销售订单查询工具，以步骤1中获得的合同号为条件，查询关联的销售订单号。",
         "[] 使用发货申请查询工具，以步骤2中获得的销售订单号为条件，查询对应的发货申请号。",
         "[] 使用确认收货查询工具，以步骤3中获得的发货申请号为条件，查询是否存在确认收货记录。",
@@ -68,35 +118,60 @@ def think_tool() -> str:
         - 子图扩展工具：根据已有的子图关系，扩展查询路径，查找更相关的节点和关系。
     """
 
-    prompt = f"""以下是白板上的信息，根据这些信息进行思考和推理以解决最近一轮的用户查询问题。如有必要，生成执行计划。
+        prompt = """以下是白板上的信息，根据这些信息进行思考和推理以解决最近一轮的用户查询问题。如有必要，生成执行计划。
 ## 当前白板信息
-{whiteboard.summarize_entries_as_string()}
+{whiteboard_info}
 
 ## 输出:"""
 
-    result = get_llm_response_gpt_4o(system_prompt, prompt)
-    
-    try:
-        result = json.loads(result)
-    except json.JSONDecodeError:
-        return f"思考结果解析失败: {result}"
-    
-    if "think_process" not in result or "plan" not in result:
-        return f"思考结果格式错误: {result}"
-    
-    if not isinstance(result["think_process"], str) or not isinstance(result["plan"], list):
-        return f"思考结果格式错误: {result}"
-    
-    for item in result["plan"]:
-        if not isinstance(item, str):
-            return f"计划项格式错误: {item}"
+        logger.info("whiteboard_info: %s", whiteboard_info_str)
+        result = get_llm_response_gpt_4o(system_prompt, prompt.format(whiteboard_info=whiteboard_info_str))
+        logger.info(f"LLM思考推理完成，结果长度: {len(result)}")
+        
+        try:
+            result = json.loads(result)
+            logger.info("JSON解析成功")
+        except json.JSONDecodeError as e:
+            logger.error("思考结果JSON解析失败: %s", str(e))
+            return f"思考结果解析失败: {result}"
+        
+        if "think_process" not in result or "plan" not in result:
+            logger.error("思考结果格式错误，缺少必要字段: %s", str(result))
+            return f"思考结果格式错误: {result}"
+        
+        if not isinstance(result["think_process"], str) or not isinstance(result["plan"], list):
+            logger.error("思考结果字段类型错误: %s", str(result))
+            return f"思考结果格式错误: {result}"
+        
+        for item in result["plan"]:
+            if not isinstance(item, str):
+                logger.error("计划项格式错误: %s", str(item))
+                return f"计划项格式错误: {item}"
 
-    whiteboard.thought_process({"content": result["think_process"]})
-    
-    for item in result["plan"]:
-        whiteboard.plan({"content": item})
-    
-    return f"思考结果: {result}"
+        # 将结果写入白板
+        think_message = {
+            "role": "assistant",
+            "content": result["think_process"],
+            "type": "think_process"
+        }
+        whiteboard.append(think_message)
+        logger.info("思考过程已写入白板")
+        
+        for item in result["plan"]:
+            plan_message = {
+                "role": "assistant", 
+                "content": item,
+                "type": "plan"
+            }
+            whiteboard.append(plan_message)
+        logger.info(f"执行计划已写入白板，共{len(result['plan'])}项")
+        
+        logger.info("think工具执行完成")
+        return f"思考结果: {result['think_process']}"
+        
+    except Exception as e:
+        logger.error("think工具执行出错: %s", str(e))
+        return f"思考工具执行失败: {str(e)}"
 
 @mcp.tool(name="write")
 def write_tool() -> str:
@@ -106,34 +181,135 @@ def write_tool() -> str:
     write工具函数本身无需输入和输出，阅读白板信息作为信息输入，生成最终输出写到白板作为输出，作为对用户查询query的回答。
 
     """
+    logger.info("开始执行write工具 - 生成正式回复")
     
-    system_prompt = """你是一个专业生成正式回复的助手，根据你需要使用白板上展示地用户问题、参考经验、业务相关节点图谱、工具执行结果、已有思考结果等信息，将最终输出正式输出给用户。
-    请确保输出内容准确、逻辑清晰，符合用户的需求。
-    
-    ## 白板的字段解释
-    input_query: 用户的原始查询问题
-    experience_nld: 可能与用户查询问题相关的参考经验，自然语言描述
-    related_graph: 可能与用户查询问题相关业务相关节点图谱，展示查询路径中涉及的节点和关系
-    *_tool_results: 特定工具执行结果，展示查询路径中使用的工具和其输出结果
-    think_process: 之前的显示思考结果
-    plan: 之前的执行计划
-    output: 关于input_query输出给用户的结果 （即上一轮的正式回复）
+    try:
+        # 获取当前whiteboard实例
+        whiteboard = get_current_whiteboard()
+        
+        # 获取白板信息
+        whiteboard_info = whiteboard.read()
+        logger.info(f"获取白板信息成功，消息数量: {len(whiteboard_info)}")
+        
+        # 将whiteboard信息转换为字符串格式
+        whiteboard_info_str = json.dumps(whiteboard_info, ensure_ascii=False, indent=2)
+        
+        system_prompt = """你是一个专业生成正式回复的助手，根据你需要使用白板上展示地用户问题、参考经验、业务相关节点图谱、工具执行结果、已有思考结果等信息，将最终输出正式输出给用户。
+        请确保输出内容准确、逻辑清晰，符合用户的需求。
+        
+        ## 白板的字段解释
+        input_query: 用户的原始查询问题
+        experience_nld: 可能与用户查询问题相关的参考经验，自然语言描述
+        related_graph: 可能与用户查询问题相关业务相关节点图谱，展示查询路径中涉及的节点和关系
+        *_tool_results: 特定工具执行结果，展示查询路径中使用的工具和其输出结果
+        think_process: 之前的显示思考结果
+        plan: 之前的执行计划
+        output: 关于input_query输出给用户的结果 （即上一轮的正式回复）
 
+        """
+
+        prompt = f"""以下是白板上的信息，根据这些信息生成正式回复。
+        
+        ## 当前白板信息
+        {whiteboard_info_str}
+
+        ## 输出：
+        """
+
+        logger.info("开始调用LLM生成正式回复")
+        result = get_llm_response_gpt_4o(system_prompt, prompt)
+        logger.info(f"LLM回复生成完成，结果长度: {len(result)}")
+        
+        # 将结果写入白板
+        output_message = {
+            "role": "assistant",
+            "content": result,
+            "type": "output"
+        }
+        whiteboard.append(output_message)
+        logger.info("正式回复已写入白板")
+        
+        logger.info("write工具执行完成")
+        return f"任务完成状态: {result}"
+        
+    except Exception as e:
+        logger.error(f"write工具执行出错: {e}")
+        return f"回复生成失败: {str(e)}"
+
+@mcp.tool(name="natural_language_sum")
+def sum_with_nl_tool(query: str) -> float:
     """
-
-    prompt = f"""以下是白板上的信息，根据这些信息生成正式回复。
+    从文本中提取所有用于求和的数值，计算它们的总和。
     
-    ## 当前白板信息
-    {whiteboard.summarize_entries_as_string()}
+    :param query: 包含多个数字和加法操作的自然语言字符串，例如 "5加3加2"
+    :return: 多个数字的和
+    """
+    logger.info(f"开始处理自然语言求和请求: {query[:100]}...")  # 只记录前100个字符避免日志过长
+    
+    system_prompt = """你是一个智能求和助手。你的任务是：**仅当用户明确表达"对某些数值求和"的意图时**，才从输入中提取那些**待求和的具体数值项**，并转换为标准数字列表。
+支持的数值形式包括：
+- 阿拉伯数字：如 5, 9800, 3.14, -20
+- 中文数字：如 五、十二、三百、一万二（=12000）、三点五（=3.5）
+- 带单位缩写：如 10k（=10000）、5w（=50000）、2.5万（=25000）
+- 混合表达：如 "共买了三次，分别是2件、五件和10件" → 提取 [2, 5, 10]
 
+处理规则：
+1. **只提取明确作为"数值量"的数字**，忽略日期、编号、序号、电话号码等非统计性数字。
+2. 中文数字需正确转换为阿拉伯数字（注意："一万二" = 12000，"三千五" = 3500）。
+3. 单位如"k"=1000，"w"或"万"=10000，"亿"=100000000。
+4. 输出必须是严格有效的 JSON 对象，仅包含一个字段 "numbers"，其值为数字列表（按出现顺序）。
+
+示例输入：
+"10月份有5笔订单，分别是9800，10w，一万二，90000，5k，他们的总金额是多少"
+
+期望输出：
+{"numbers": [9800, 100000, 12000, 90000, 5000]}
+"""
+    
+    prompt = f"""以下是用户输入的自然语言查询：{query}
+    
     ## 输出：
     """
-
+    
+    logger.info("正在调用LLM进行数值提取...")
     result = get_llm_response_gpt_4o(system_prompt, prompt)
+    logger.info(f"LLM返回结果: {result}")
     
-    whiteboard.output({"content": result})
+    try:
+        result = json.loads(result)
+        logger.info("JSON解析成功")
+    except json.JSONDecodeError as e:
+        error_msg = f"数值提取结果解析失败: {result}"
+        logger.error(f"JSON解析失败: {e}, 原始结果: {result}")
+        return error_msg
+
+    if not isinstance(result, dict) or "numbers" not in result:
+        error_msg = f"数值提取结果格式错误: {result}"
+        logger.error(f"结果格式错误: {error_msg}")
+        return error_msg
+
+    numbers_raw = result["numbers"]
+    logger.info(f"提取到的原始数字列表: {numbers_raw}")
     
-    return f"任务完成状态: {result}"
+    if not isinstance(numbers_raw, list):
+        error_msg = f"numbers字段应为列表: {numbers_raw}"
+        logger.error(f"numbers字段类型错误: {error_msg}")
+        return error_msg
+
+    numbers = []
+    for idx, n in enumerate(numbers_raw):
+        try:
+            num = float(n)
+            numbers.append(num)
+            logger.debug(f"成功转换第{idx + 1}个数字: {n} -> {num}")
+        except (ValueError, TypeError) as e:
+            error_msg = f"numbers列表中第{idx + 1}项无法转为数字: {n}"
+            logger.error(f"数字转换失败: {error_msg}, 错误: {e}")
+            return error_msg
+
+    final_sum = sum(numbers)
+    logger.info(f"计算完成: {numbers} 的总和为 {final_sum}")
+    return final_sum
 
 # @mcp.tool(name="销售合同查询工具")
 # def sales_contract_search_tool(query: str, whiteboard: Whiteboard) -> str:

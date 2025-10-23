@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 def get_llm_response_gpt_4o(system_prompt, user_prompt):
-    LLM_URL = os.getenv("BASE_URL", "https://api.apiyi.com/v1/chat/completions")
+    LLM_URL = os.getenv("BASE_URL", "https://api.apiyi.com/v1") + "/chat/completions"
     HEADERS = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {os.getenv('TOKEN', '')}"
@@ -64,6 +64,13 @@ def get_llm_response_with_function_call(messages, functions=None):
             "content": f"LLM调用异常: {str(e)}",
             "function_call": None
         }
+
+# def get_llm_response_with_mcp_tools():
+
+# def get_llm_response_with_function_call(messages, functions=None):
+
+
+
 
 if __name__ == "__main__":
     system_prompt = "你是一个专业的法律问答助手"
