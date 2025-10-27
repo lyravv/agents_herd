@@ -2,7 +2,12 @@ import requests
 import json
 import os
 from dotenv import load_dotenv, find_dotenv
+from utils.logger import setup_logger
+
 load_dotenv(find_dotenv())
+
+# 初始化logger
+logger = setup_logger('llm')
 
 def get_llm_response_gpt_4o(messages):
     LLM_URL = os.getenv("BASE_URL", "https://api.apiyi.com/v1") + "/chat/completions"
@@ -17,13 +22,17 @@ def get_llm_response_gpt_4o(messages):
         "max_tokens": int(os.getenv("MAX_TOKENS", 2000))
     }
     try:
+        logger.info("开始调用LLM API")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
             result = response.json()
+            logger.info("LLM API调用成功")
             return result['choices'][0]['message']['content']
         else:
+            logger.error(f"LLM调用失败: {response.status_code} - {response.text}")
             return f"LLM调用失败: {response.status_code} - {response.text}"
     except Exception as e:
+        logger.exception(f"LLM调用异常: {str(e)}")
         return f"LLM调用异常: {str(e)}"
 
 def get_llm_response_with_function_call(messages, functions=None):
@@ -45,9 +54,10 @@ def get_llm_response_with_function_call(messages, functions=None):
         payload["function_call"] = "auto"
     
     try:
-        print(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
+        logger.info(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
-        print(f"LLM响应: {response.status_code} - {response.text}")
+        logger.info(f"LLM响应: {response.status_code}")
+        logger.debug(f"LLM响应详情: {response.text}")
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']
@@ -81,9 +91,10 @@ def get_llm_response_gpt_4o_with_tools(messages, tools=None):
         payload["tool_choice"] = "auto"
     
     try:
-        print(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
+        logger.info(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
-        print(f"LLM响应: {response.status_code} - {response.text}")
+        logger.info(f"LLM响应: {response.status_code}")
+        logger.debug(f"LLM响应详情: {response.text}")
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']
@@ -212,4 +223,4 @@ if __name__ == "__main__":
     ]
     
     response = get_llm_response_gpt_4o_with_tools(messages3, tools)
-    print(f"完整响应: {response}")
+    # print(f"完整响应: {response}")

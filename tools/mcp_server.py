@@ -1,49 +1,13 @@
 # -*- coding: utf-8 -*-
 import json
-import logging
 import os
-from datetime import datetime
 from fastmcp import FastMCP
 from utils.whiteboard import Whiteboard
+from utils.logger import setup_logger
 from models.llm import get_llm_response_gpt_4o
 
-
-
-def setup_logger():
-    """配置日志系统"""
-    # 创建logs目录
-    log_dir = "logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    
-    # 配置日志格式
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-    
-    # 创建logger
-    logger = logging.getLogger('mcp_server')
-    logger.setLevel(logging.INFO)
-    
-    # 避免重复添加handler
-    if not logger.handlers:
-        # 文件handler - 按日期命名
-        today = datetime.now().strftime('%Y%m%d')
-        file_handler = logging.FileHandler(f'{log_dir}/mcp_server_{today}.log', encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
-        file_handler.setFormatter(logging.Formatter(log_format))
-        
-        # 控制台handler
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(logging.Formatter(log_format))
-        
-        # 添加handlers
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
-    
-    return logger
-
 # 初始化logger
-logger = setup_logger()
+logger = setup_logger('mcp_server')
 
 mcp = FastMCP("hgt2.0工具")
 
