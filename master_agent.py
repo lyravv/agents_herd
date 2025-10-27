@@ -1,12 +1,12 @@
-# from utils.note_board import Whiteboard
-# from tools.mcp_server import MCP
+from mcp.types import Content
 from utils.whiteboard import Whiteboard
-from models.llm import get_llm_response_with_function_call
+from models.llm import get_llm_response_gpt_4o_with_tools
 from graph.graph_match import graph_match
 from memory.long_term_memory import experience_match
 import json
 import asyncio
-from tools.mcp_client import get_available_tools_async, call_tool
+from models import llm_openai
+from tools.mcp_client import get_available_tools_async, convert_mcp_tool_to_openai, call_tool
 
 master_agent_system_prompt = f"""
 你是一个工具调用专家。系统通过whiteboard向你呈现有用的信息。白板上可能包含用户的输入问题，记忆系统相关的参考经验，图谱上相关的节点、边等信息。
@@ -36,47 +36,65 @@ class MasterAgent:
         # 如果没有传入whiteboard，使用全局共享实例
         self.whiteboard = whiteboard if whiteboard is not None else Whiteboard.get_instance()
 
-    def step(self) -> str:
+    def llm_step(self) -> str:
 
-        print(f"当前白板状态: {self.whiteboard.summarize_entries_as_string()}")
-        messages = [
-            {"role": "system", "content": master_agent_system_prompt},
-            {"role": "user", "content": master_agent_prompt.format(whiteboard_str=self.whiteboard.summarize_entries_as_string())}
-        ]
-        tools = asyncio.run(get_available_tools_async())
-        print(f"可用工具: {tools}")
-        functions = [tool.__dict__ for tool in tools]
+        messages = self.whiteboard.read()
+        print(f"messages: {messages}")
+        mcp_tools = asyncio.run(get_available_tools_async())
+        print(f"可用工具: {mcp_tools}")
+        tools = [convert_mcp_tool_to_openai(tool.__dict__) for tool in mcp_tools]
 
-        response = get_llm_response_with_function_call(messages, functions)
-        if response.get("function_call"):
-            function_call = response["function_call"]
-            function_args = json.loads(function_call["arguments"])
-            function_name = function_call["name"]
-            function_response = asyncio.run(call_tool(function_name, function_args))
-            messages.append(response)
-            messages.append({
-                "role": "function",
-                "name": function_name,
-                "content": function_response
-            })
-            return function_response
-        else:
-            messages.append(response)
-            return response.get("content", "")
+        response = get_llm_response_gpt_4o_with_tools(messages, tools)
+        print(f"LLM响应: {response}")
+        return response
 
+    def execute_tool_calls(self, response: dict) -> dict:
+        tool_calls = response.get("tool_calls")
+        tool_results = []
 
+        if not tool_calls:
+            return tool_results
+        
+        for tool_call in tool_calls:
+            function_name = tool_call["function"]["name"]
+            arguments = json.loads(tool_call["function"]["arguments"])
+            tool_id = tool_call["id"]
+            tool_result = asyncio.run(call_tool(function_name, arguments))
+            
+            # 构建工具调用结果消息
+            tool_call_result = {
+                "role": "tool",
+                "content": tool_result,
+                "tool_call_id": tool_id
+            }
+            tool_results.append(tool_call_result)
+        
+        return tool_results
+    
     def solve(self) -> str:
-        while True:
-            latest_entry = self.whiteboard.get_latest_entry()
-            if latest_entry and latest_entry.get("type") == "output":
+        turn = 0
+        final_response = None
+        while turn < 10:
+            llm_result = self.llm_step()
+            # 如果response不是工具调用，跳出循环
+            if llm_result.get("role") == "assistant" and llm_result.get("content") is not None:
+                final_response = llm_result
                 break
-            result = self.step()
-        return result
+            self.whiteboard.append(llm_result)
+            tool_execution_results = self.execute_tool_calls(llm_result)
+            print(f"工具调用结果: {tool_execution_results}")
+            for result in tool_execution_results:
+                self.whiteboard.append(result)
+            turn += 1
+
+        if final_response is None:
+            return "我无法解决这个问题。"
+        
+        return final_response["content"]
 
 if __name__ == "__main__":
-    # 使用全局共享的whiteboard实例
-    # whiteboard = Whiteboard.get_instance()
-    whiteboard = Whiteboard("whiteboard.json")
+    whiteboard = Whiteboard("test_board")
+    whiteboard.clear()
     master_agent = MasterAgent(whiteboard)
 
     
@@ -105,16 +123,36 @@ SO20251030,SC20251006,650000.00,2025-10-30,2025-11-15,pending
 SO20251110,SC20251008,820000.00,2025-11-10,2025-11-30,pending"""
     
     print(query)
-    whiteboard.user_input({"content": query})
+    messages = [{"role": "user", "content": query}]
+    whiteboard.append(messages[0])
 
     # 这里需要实现experience_match和graph_match函数
-    experience = experience_match(query)
-    graph = graph_match(query)
+    # experience = experience_match(query)
+    # graph = graph_match(query)
     
-    if experience:
-        whiteboard.experience_nld({"content": experience})
-    if graph:
-        whiteboard.related_graph({"content": graph})
+    # if experience or graph:
+    #     faked_assistant_response = {
+    #         "role": "assistant", 
+    #         "content": None,
+    #         "tool_calls": [
+    #             {
+    #                 "id": "retrieve_experience_001",
+    #                 "type": "function",
+    #                 "function": {
+    #                     "name": "retrieve_experience_tool",
+    #                     "arguments": ""
+    #                 }
+    #             }
+    #         ]
+    #     }
+    #     whiteboard.append(faked_assistant_response)
+    #     full_related_info = f"相关经验: {experience}\n相关图谱: {graph}"
+    #     faked_tool_response = {
+    #         "role": "tool",
+    #         "tool_call_id": "retrieve_experience_001",
+    #         "content": full_related_info
+    #     }        
+    #     whiteboard.append(faked_tool_response)
 
-    result = master_agent.step()
+    result = master_agent.solve()
     print(result)

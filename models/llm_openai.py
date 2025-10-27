@@ -163,7 +163,7 @@ def case2():
                     "type": "function",
                     "function": {
                         "name": "think_tool",
-                        "arguments": "think时候会查看整个history"
+                        "arguments": ""
                     }
                 }
             ]

@@ -6,7 +6,7 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 DB_PATH = os.getenv("WHITEBOARD_DB", "whiteboard.db")
-_lock = threading.Lock()  # 同一进程内多线程安全（可选）
+_lock = threading.Lock()  
 
 class Whiteboard:
     def __init__(self, board_id: str):
@@ -26,7 +26,6 @@ class Whiteboard:
                     seq INTEGER
                 )
             """)
-            # 为每个 board_id 维护一个自增 seq（用于顺序）
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS board_seq (
                     board_id TEXT PRIMARY KEY,
@@ -48,7 +47,6 @@ class Whiteboard:
             conn = sqlite3.connect(DB_PATH, timeout=10)
             cursor = conn.cursor()
 
-            # 获取并递增 seq
             cursor.execute("INSERT OR IGNORE INTO board_seq (board_id, next_seq) VALUES (?, 0)", (self.board_id,))
             cursor.execute("UPDATE board_seq SET next_seq = next_seq + 1 WHERE board_id = ?", (self.board_id,))
             cursor.execute("SELECT next_seq FROM board_seq WHERE board_id = ?", (self.board_id,))
@@ -60,6 +58,32 @@ class Whiteboard:
             )
             conn.commit()
             conn.close()
+
+
+    def tool_append(self, message: dict):
+        """
+        追加一条消息（如 {"role": "assistant", "content": "..."}）
+        """
+        self.append({
+            "role": "assistant", 
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": "call_web_search_001",
+                    "type": "function",
+                    "function": {
+                        "name": "web_search",
+                        "arguments": '{"query": "英伟达股价"}'
+                    }
+                }
+            ]
+        })
+        self.append({
+            "role": "tool",
+            "tool_call_id": "call_web_search_001",
+            "content": "英伟达当前的股价是120美元"
+        })
+        self.append(message)
 
     def read(self) -> list[dict]:
         """

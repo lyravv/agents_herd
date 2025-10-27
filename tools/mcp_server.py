@@ -125,7 +125,11 @@ def think_tool(whiteboard_id: str = "123") -> str:
 ## 输出:"""
 
         logger.info("whiteboard_info: %s", whiteboard_info_str)
-        result = get_llm_response_gpt_4o(system_prompt, prompt.format(whiteboard_info=whiteboard_info_str))
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt.format(whiteboard_info=whiteboard_info_str)}
+        ]
+        result = get_llm_response_gpt_4o(messages) 
         logger.info(f"LLM思考推理完成，结果长度: {len(result)}")
         
         try:
@@ -217,7 +221,12 @@ def write_tool() -> str:
         """
 
         logger.info("开始调用LLM生成正式回复")
-        result = get_llm_response_gpt_4o(system_prompt, prompt)
+        
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ]
+        result = get_llm_response_gpt_4o(messages)
         logger.info(f"LLM回复生成完成，结果长度: {len(result)}")
         
         # 将结果写入白板
@@ -272,7 +281,11 @@ def sum_with_nl_tool(query: str) -> float:
     """
     
     logger.info("正在调用LLM进行数值提取...")
-    result = get_llm_response_gpt_4o(system_prompt, prompt)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ]
+    result = get_llm_response_gpt_4o(messages)
     logger.info(f"LLM返回结果: {result}")
     
     try:
