@@ -59,32 +59,6 @@ class Whiteboard:
             conn.commit()
             conn.close()
 
-
-    def tool_append(self, message: dict):
-        """
-        追加一条消息（如 {"role": "assistant", "content": "..."}）
-        """
-        self.append({
-            "role": "assistant", 
-            "content": None,
-            "tool_calls": [
-                {
-                    "id": "call_web_search_001",
-                    "type": "function",
-                    "function": {
-                        "name": "web_search",
-                        "arguments": '{"query": "英伟达股价"}'
-                    }
-                }
-            ]
-        })
-        self.append({
-            "role": "tool",
-            "tool_call_id": "call_web_search_001",
-            "content": "英伟达当前的股价是120美元"
-        })
-        self.append(message)
-
     def read(self) -> list[dict]:
         """
         返回按顺序排列的消息列表

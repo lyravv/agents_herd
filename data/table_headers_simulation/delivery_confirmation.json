@@ -1,0 +1,43 @@
+{
+    "table_name": "delivery_confirmation",
+    "table_name_zh": "货物接单表",
+    "table_description": "记录货物交付确认信息，包括接收日期、接收人和数量确认等信息",
+    "primary_key": "delivery_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "delivery_id",
+            "description": "交付ID，主键，唯一标识货物交付记录"
+        },
+        {
+            "name": "shipment_id",
+            "description": "关联的发货ID，外键，关联到发货申请表"
+        },
+        {
+            "name": "receive_date",
+            "description": "接收日期，货物实际接收的日期"
+        },
+        {
+            "name": "received_by",
+            "description": "接收人，接收货物的人员或单位名称"
+        },
+        {
+            "name": "quantity_received",
+            "description": "接收数量，实际接收的货物数量"
+        },
+        {
+            "name": "status",
+            "description": "状态，货物交付的确认状态，可能的值包括：pending（待确认）、confirmed（已确认）、rejected（已拒绝）、partial（部分接收）"
+        }
+    ],
+    "example": [
+        {
+            "delivery_id": "DC20251010",
+            "shipment_id": "SH20251007",
+            "receive_date": "2025-10-10",
+            "received_by": "上海仓储中心",
+            "quantity_received": 100,
+            "status": "confirmed"
+        }
+    ]
+}

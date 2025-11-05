@@ -1,3 +1,4 @@
+from mcp.types import Content
 from utils.whiteboard import Whiteboard
 from models.llm import get_llm_response_gpt_4o_with_tools
 # from graph.graph_match import graph_match
@@ -32,7 +33,6 @@ class MasterAgent:
         print(f"可用工具: {mcp_tools}")
         tools = [convert_mcp_tool_to_openai(tool.__dict__) for tool in mcp_tools]
 
-        messages = [{"role": "system", "content": master_agent_system_prompt}] + messages
         response = get_llm_response_gpt_4o_with_tools(messages, tools)
         print(f"LLM响应: {response}")
         return response
@@ -87,6 +87,33 @@ if __name__ == "__main__":
     master_agent = MasterAgent(whiteboard)
 
     
+    # while True:
+    #     query = input("用户query: ")
+    #     if query.lower() == "exit":
+    #         break
+        
+    #     shared_whiteboard.user_input({"content": query})
+
+    #     # 这里需要实现experience_match和graph_match函数
+    #     experience = experience_match(query)
+    #     graph = graph_match(query)
+        
+    #     if experience:
+    #         shared_whiteboard.experience_nld({"content": experience})
+    #     if graph:
+    #         shared_whiteboard.related_graph({"content": graph})
+
+    #     result = master_agent.solve()
+    #     print(result)
+    
+#     query = """这些订单的总金额是多少？
+# order_id,contract_id,order_amount,order_date,delivery_date,status
+# SO20251020,SC20251004,1100000.00,2025-10-20,2025-11-05,pending
+# SO20251030,SC20251006,650000.00,2025-10-30,2025-11-15,pending
+# SO20251110,SC20251008,820000.00,2025-11-10,2025-11-30,pending"""
+    # query = "上海数联信息的合同为什么还没有POD？"
+    # query = "SC20251010合同为什么还不能确认收入，帮忙看下什么情况"
+    # query = "SC20251010合同还有什么物资没有处理，导致不能确认收入。"
     query = "sr20251104这个发货单的成套物资为什么还没有出库"
     # query = "SC20251010合同哪些物资、什么原因影响未出库？对应负责人是谁？"
     
@@ -98,7 +125,7 @@ if __name__ == "__main__":
     # relations = json.load(open("/home/wangling/projects/agents_herd/data/table_ontology_simulation/relation.json"))
     # graph_retrive_result = json.dumps(tables, ensure_ascii=False, indent=2) + json.dumps(relations, ensure_ascii=False, indent=2)
     
-    graph_retrive_result = json.dumps(json.load(open("/home/wangling/projects/agents_herd/data_2/hyper_schema_workflow.json")), ensure_ascii=False, indent=2)
+    graph_retrive_result = json.dumps(json.load(open("/home/wangling/projects/agents_herd/data_2/hyper_schema_workflow.json")))
     graph_retrive = [{
             "role": "assistant", 
             "content": None,
@@ -122,33 +149,7 @@ if __name__ == "__main__":
     whiteboard.append(graph_retrive[0])
     whiteboard.append(graph_retrive[1])
 
-    # pre defined plan make
-    from tools.task_dag import task_dag_tool
-    mcp_tools = asyncio.run(get_available_tools_async())
-    tools = [convert_mcp_tool_to_openai(tool.__dict__) for tool in mcp_tools]
-    plan_dag = task_dag_tool(whiteboard.read(), tools)
-    plan_make = [{
-            "role": "assistant", 
-            "content": None,
-            "tool_calls": [
-                {
-                    "id": "call_plan_make_tool_001",
-                    "type": "function",
-                    "function": {
-                        "name": "plan_make_tool",
-                        "arguments": ""
-                    }
-                }
-            ]
-        },
-        {
-            "role": "tool",
-            "tool_call_id": "call_plan_make_tool_001",
-            "content": plan_dag
-        }]
-    whiteboard.append(plan_make[0])
-    whiteboard.append(plan_make[1])
-    
+    # pre defined plan
 
     result = master_agent.solve()
     print(result)

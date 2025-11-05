@@ -1,0 +1,13 @@
+inventory_id,product_id,product_name,quantity,location,status,last_updated,min_stock_level,max_stock_level,supplier_id,supplier_name
+INV001,P001,高性能服务器,120,A区-01架,available,2025-01-15,50,200,SUP001,服务器供应商A
+INV002,P002,网络存储设备,85,A区-02架,available,2025-01-20,30,100,SUP002,网络设备供应商A
+INV003,P003,数据库服务器,65,B区-01架,available,2025-02-10,40,150,SUP003,服务器供应商B
+INV004,P004,网络安全设备,95,B区-03架,available,2025-02-15,30,120,SUP004,安全设备供应商B
+INV005,P005,云计算服务器,110,C区-01架,available,2025-03-05,60,200,SUP001,服务器供应商A
+INV006,P006,负载均衡器,75,C区-02架,available,2025-03-10,25,100,SUP005,网络设备供应商C
+INV007,P007,边缘计算设备,55,D区-01架,available,2025-04-05,20,80,SUP006,计算设备供应商D
+INV008,P008,网络交换机,130,D区-02架,available,2025-04-10,50,150,SUP002,网络设备供应商A
+INV009,P009,AI计算服务器,40,E区-01架,available,2025-05-05,20,60,SUP007,AI设备供应商C
+INV010,P010,高速存储阵列,60,E区-02架,available,2025-05-10,30,90,SUP008,存储设备供应商E
+INV011,P011,虚拟化服务器,85,F区-01架,available,2025-06-05,40,120,SUP001,服务器供应商A
+INV012,P012,备份系统,45,F区-02架,available,2025-06-10,20,70,SUP009,备份系统供应商D

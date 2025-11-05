@@ -1,0 +1,59 @@
+{
+  "entities": [
+    {
+      "id": "project_change_request",
+      "name": "项目变更单表",
+      "description": "记录销售合同执行过程中的项目变更申请，包括变更原因和金额调整等信息",
+      "headers": []
+    },
+    {
+      "id": "delivery_confirmation",
+      "name": "货物接单表",
+      "description": "记录货物交付确认信息，包括接收日期、接收人和数量确认等信息",
+      "headers": []
+    },
+    {
+      "id": "sales_contract",
+      "name": "销售合同表",
+      "description": "对客户签订的正式销售合同，记录销售合同的相关信息",
+      "headers": []
+    },
+    {
+      "id": "delivery_handover",
+      "name": "发货交接单",
+      "description": "记录销售订单的发货交接信息，包括发货来源、交接日期和交接状态等信息",
+      "headers": []
+    },
+    {
+      "id": "shipment_request",
+      "name": "发货申请表",
+      "description": "记录销售订单的发货申请信息，包括申请日期、货品信息和审批状态等信息",
+      "headers": []
+    },
+    {
+      "id": "internal_adjustment",
+      "name": "内调表",
+      "description": "记录公司内部对销售订单的调整审批信息，包括调整原因和相关部门等信息",
+      "headers": []
+    },
+    {
+      "id": "sales_contract_addendum",
+      "name": "补充合同表",
+      "description": "记录对现有销售合同的补充协议，包括变更内容和金额调整等信息",
+      "headers": []
+    },
+    {
+      "id": "sales_order",
+      "name": "销售订单表",
+      "description": "基于销售合同生成的具体订单信息，记录订单金额、交付日期和状态等信息",
+      "headers": []
+    },
+    {
+      "id": "order_items",
+      "name": "销售订单货品表",
+      "description": "记录销售订单中包含的具体货品信息，包括货品名称、数量等详细信息",
+      "headers": []
+    }
+  ],
+  "relationships": []
+}

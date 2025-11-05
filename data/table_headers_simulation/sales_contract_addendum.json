@@ -1,0 +1,42 @@
+{
+    "table_name": "sales_contract_addendum",
+    "table_name_zh": "补充合同表",
+    "table_description": "记录对现有销售合同的补充协议，包括变更内容和金额调整等信息",
+    "primary_key": "addendum_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "addendum_id",
+            "description": "补充合同ID，主键，唯一标识补充合同"
+        },
+        {
+            "name": "contract_id",
+            "description": "关联的销售合同ID，外键，关联到销售合同表"
+        },
+        {
+            "name": "change_desc",
+            "description": "变更描述，详细说明补充合同的变更内容"
+        },
+        {
+            "name": "change_amount",
+            "description": "变更金额，补充合同涉及的金额调整"
+        },
+        {
+            "name": "created_at",
+            "description": "创建日期，补充合同的创建时间"
+        },
+        {
+            "name": "status",
+            "description": "状态，补充合同的处理状态，可能的值包括：approved（已批准）、pending（待处理）、rejected（已拒绝）、cancelled（已取消）"
+        }
+    ],
+    "example": [
+        {
+            "addendum_id": "AD20251002",
+            "contract_id": "SC20251001",
+            "change_desc": "增加售后技术支持",
+            "change_amount": 20000.0,
+            "created_at": "2025-10-02"
+        }
+    ]
+}

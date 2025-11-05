@@ -1,0 +1,48 @@
+{
+    "table_name": "shipment_request",
+    "table_name_zh": "发货申请表",
+    "table_description": "记录销售订单的发货申请信息，包括申请日期、货品信息和审批状态等信息",
+    "primary_key": "shipment_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "shipment_id",
+            "description": "发货ID，主键，唯一标识发货申请"
+        },
+        {
+            "name": "order_id",
+            "description": "关联的订单ID，外键，关联到销售订单表"
+        },
+        {
+            "name": "line_number",
+            "description": "订单物品行号，手动选择的订单物品子表中的行号，对应\"销售订单货品表\"的行号"
+        },
+        {
+            "name": "product_name",
+            "description": "货品名称，申请发货的产品名称"
+        },
+        {
+            "name": "request_date",
+            "description": "申请日期，发货申请的提交日期"
+        },
+        {
+            "name": "quantity",
+            "description": "数量，申请发货的产品数量"
+        },
+        {
+            "name": "status",
+            "description": "状态，发货申请的审批状态，可能的值包括：pending（待审批）、approved（已批准）、rejected（已拒绝）、completed（已完成）"
+        }
+    ],
+    "example": [
+        {
+            "shipment_id": "SH20251007",
+            "order_id": "SO20251003",
+            "line_number": 1,
+            "product_name": "高性能服务器",
+            "request_date": "2025-10-07",
+            "quantity": 30,
+            "status": "approved"
+        }
+    ]
+}

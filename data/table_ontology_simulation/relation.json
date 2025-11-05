@@ -1,0 +1,77 @@
+{
+  "relation": [
+    {
+      "source": "销售合同表",
+      "target": "销售订单表",
+      "relation": "has_order",
+      "join_key": [
+        "contract_id"
+      ]
+    },
+    {
+      "source": "销售订单表",
+      "target": "销售订单货品表",
+      "relation": "contains_item",
+      "join_key": [
+        "order_id"
+      ]
+    },
+    {
+      "source": "销售订单表",
+      "target": "发货申请表",
+      "relation": "creates_shipment",
+      "join_key": [
+        "order_id"
+      ]
+    },
+    {
+      "source": "发货申请表",
+      "target": "货物接单表",
+      "relation": "confirmed_by_delivery",
+      "join_key": [
+        "shipment_id"
+      ]
+    },
+    {
+      "source": "发货申请表",
+      "target": "发货交接单",
+      "relation": "has_handover",
+      "join_key": [
+        "shipment_id"
+      ]
+    },
+    {
+      "source": "销售订单表",
+      "target": "发货交接单",
+      "relation": "has_delivery",
+      "join_key": [
+        "order_id"
+      ]
+    },
+    {
+      "source": "销售合同表",
+      "target": "补充合同表",
+      "relation": "has_addendum",
+      "join_key": [
+        "contract_id"
+      ]
+    },
+    {
+      "source": "销售订单表",
+      "target": "内调表",
+      "relation": "has_adjustment",
+      "join_key": [
+        "order_id",
+        "related_order_id"
+      ]
+    },
+    {
+      "source": "销售合同表",
+      "target": "项目变更单表",
+      "relation": "has_change_request",
+      "join_key": [
+        "contract_id"
+      ]
+    }
+  ]
+}

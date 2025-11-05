@@ -1,0 +1,51 @@
+{
+    "table_name": "order_items",
+    "table_name_zh": "销售订单货品表",
+    "table_description": "记录销售订单中包含的具体货品信息，包括货品名称、数量等详细信息",
+    "primary_key": "item_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "item_id",
+            "description": "货品ID，主键，唯一标识订单中的货品项"
+        },
+        {
+            "name": "order_id",
+            "description": "关联的订单ID，外键，关联到销售订单表"
+        },
+        {
+            "name": "product_name",
+            "description": "货品名称，订单中货品的具体名称"
+        },
+        {
+            "name": "quantity",
+            "description": "数量，订单中该货品的数量"
+        },
+        {
+            "name": "unit_price",
+            "description": "单价，该货品的单位价格"
+        },
+        {
+            "name": "total_price",
+            "description": "总价，该货品的总价值（数量×单价）"
+        }
+    ],
+    "example": [
+        {
+            "item_id": "OI20251003001",
+            "order_id": "SO20251003",
+            "product_name": "高性能服务器",
+            "quantity": 50,
+            "unit_price": 8000.0,
+            "total_price": 400000.0
+        },
+        {
+            "item_id": "OI20251003002",
+            "order_id": "SO20251003",
+            "product_name": "网络交换机",
+            "quantity": 20,
+            "unit_price": 6000.0,
+            "total_price": 120000.0
+        }
+    ]
+}

@@ -1,0 +1,43 @@
+{
+    "table_name": "internal_adjustment",
+    "table_name_zh": "内调表",
+    "table_description": "记录公司内部对销售订单的调整审批信息，包括调整原因和相关部门等信息",
+    "primary_key": "adjust_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "adjust_id",
+            "description": "调整ID，主键，唯一标识内部调整记录"
+        },
+        {
+            "name": "related_order_id",
+            "description": "关联的订单ID，外键，关联到销售订单表"
+        },
+        {
+            "name": "department",
+            "description": "部门，发起内部调整的部门名称"
+        },
+        {
+            "name": "adjust_reason",
+            "description": "调整原因，详细说明内部调整的原因"
+        },
+        {
+            "name": "status",
+            "description": "状态，内部调整的处理状态，如pending、completed等"
+        },
+        {
+            "name": "created_at",
+            "description": "创建日期，内部调整记录的创建时间"
+        }
+    ],
+    "example": [
+        {
+            "adjust_id": "IN20251006",
+            "related_order_id": "SO20251003",
+            "department": "采购部",
+            "adjust_reason": "调整材料采购价格",
+            "status": "completed",
+            "created_at": "2025-10-06"
+        }
+    ]
+}

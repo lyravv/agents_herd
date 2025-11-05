@@ -1,0 +1,48 @@
+{
+    "table_name": "sales_contract",
+    "table_name_zh": "销售合同表",
+    "table_description": "对客户签订的正式销售合同，记录销售合同的相关信息",
+    "primary_key": "contract_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "contract_id",
+            "description": "合同ID，主键，唯一标识销售合同"
+        },
+        {
+            "name": "customer_name",
+            "description": "客户名称，销售合同签订的客户"
+        },
+        {
+            "name": "total_amount",
+            "description": "合同总金额，销售合同的金额总和"
+        },
+        {
+            "name": "sign_date",
+            "description": "签订日期，销售合同签订的日期"
+        },
+        {
+            "name": "status",
+            "description": "状态，销售合同的当前状态，可能的值包括：active（有效）、expired（已过期）、pending（待处理）、cancelled（已取消）"
+        },
+        {
+            "name": "version",
+            "description": "版本号，销售合同的版本号，用于跟踪更新"
+        },
+        {
+            "name": "is_active",
+            "description": "是否有效，标识销售合同是否当前有效"
+        }
+    ],
+    "example": [
+        {
+            "contract_id": "SC20251001",
+            "customer_name": "北京智控科技",
+            "total_amount": 500000.0,
+            "sign_date": "2025-10-01",
+            "status": "active",
+            "version": 1,
+            "is_active": true
+        }
+    ]
+}

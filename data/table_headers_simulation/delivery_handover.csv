@@ -1,0 +1,10 @@
+handover_id,shipment_id,order_id,product_name,quantity,delivery_source,supplier_name,handover_date,status
+HO20250312,SH20250310,SO20250305,高性能服务器,40,inventory,,2025-03-12,completed
+HO20250317,SH20250315,SO20250305,网络存储设备,15,supplier_direct,网络设备供应商A,2025-03-17,completed
+HO20250517,SH20250515,SO20250510,数据库服务器,20,inventory,,2025-05-17,completed
+HO20250527,SH20250525,SO20250510,网络安全设备,20,supplier_direct,安全设备供应商B,2025-05-27,completed
+HO20251107,SH20251105,SO20251030,边缘计算设备,35,inventory,,2025-11-07,completed
+HO20251117,SH20251115,SO20251110,AI计算服务器,15,supplier_direct,AI设备供应商C,2025-11-17,pending
+HO20251120,SH20251118,SO20251110,高速存储阵列,16,inventory,,2025-11-20,pending
+HO20251122,SH20251120,SO20251115,虚拟化服务器,28,inventory,,2025-11-22,pending
+HO20251127,SH20251125,SO20251115,备份系统,7,supplier_direct,备份系统供应商D,2025-11-27,pending

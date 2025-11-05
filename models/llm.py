@@ -22,8 +22,10 @@ def get_llm_response_gpt_4o(messages):
         "max_tokens": int(os.getenv("MAX_TOKENS", 2000))
     }
     try:
-        logger.info("开始调用LLM API")
+        logger.info(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
+        logger.info(f"LLM响应: {response.status_code}")
+        logger.info(f"LLM响应详情: {response.text}")
         if response.status_code == 200:
             result = response.json()
             logger.info("LLM API调用成功")
@@ -57,7 +59,7 @@ def get_llm_response_with_function_call(messages, functions=None):
         logger.info(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
         logger.info(f"LLM响应: {response.status_code}")
-        logger.debug(f"LLM响应详情: {response.text}")
+        logger.info(f"LLM响应详情: {response.text}")
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']
@@ -94,7 +96,7 @@ def get_llm_response_gpt_4o_with_tools(messages, tools=None):
         logger.info(f"LLM请求 payload: {json.dumps(payload, ensure_ascii=False, indent=2)}")
         response = requests.post(LLM_URL, headers=HEADERS, json=payload)
         logger.info(f"LLM响应: {response.status_code}")
-        logger.debug(f"LLM响应详情: {response.text}")
+        logger.info(f"LLM响应详情: {response.text}")
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']

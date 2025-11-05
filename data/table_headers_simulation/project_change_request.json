@@ -1,0 +1,48 @@
+{
+    "table_name": "project_change_request",
+    "table_name_zh": "项目变更单表",
+    "table_description": "记录销售合同执行过程中的项目变更申请，包括变更原因和金额调整等信息",
+    "primary_key": "change_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "change_id",
+            "description": "变更ID，主键，唯一标识项目变更申请"
+        },
+        {
+            "name": "contract_id",
+            "description": "关联的销售合同ID，外键，关联到销售合同表"
+        },
+        {
+            "name": "reason",
+            "description": "变更原因，详细说明项目变更的原因"
+        },
+        {
+            "name": "old_amount",
+            "description": "原金额，变更前的合同金额"
+        },
+        {
+            "name": "new_amount",
+            "description": "新金额，变更后的合同金额"
+        },
+        {
+            "name": "request_date",
+            "description": "申请日期，项目变更申请的提交日期"
+        },
+        {
+            "name": "approval_status",
+            "description": "审批状态，项目变更申请的审批状态，如pending、approved等"
+        }
+    ],
+    "example": [
+        {
+            "change_id": "PC20251005",
+            "contract_id": "SC20251001",
+            "reason": "增加交付范围",
+            "old_amount": 500000.0,
+            "new_amount": 550000.0,
+            "request_date": "2025-10-05",
+            "approval_status": "approved"
+        }
+    ]
+}

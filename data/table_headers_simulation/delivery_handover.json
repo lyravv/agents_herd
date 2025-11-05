@@ -1,0 +1,58 @@
+{
+    "table_name": "delivery_handover",
+    "table_name_zh": "发货交接单",
+    "table_description": "记录销售订单的发货交接信息，包括发货来源、交接日期和交接状态等信息",
+    "primary_key": "handover_id",
+    "system": "bpm",
+    "fields": [
+        {
+            "name": "handover_id",
+            "description": "交接ID，主键，唯一标识发货交接单"
+        },
+        {
+            "name": "shipment_id",
+            "description": "关联的发货申请ID，外键，关联到发货申请表"
+        },
+        {
+            "name": "order_id",
+            "description": "关联的订单ID，外键，关联到销售订单表"
+        },
+        {
+            "name": "product_name",
+            "description": "货品名称，交接发货的产品名称"
+        },
+        {
+            "name": "quantity",
+            "description": "数量，交接发货的产品数量"
+        },
+        {
+            "name": "delivery_source",
+            "description": "发货来源，表示货品的发货方式，可能的值包括：inventory（库存发货）、supplier_direct（供应商直发）"
+        },
+        {
+            "name": "supplier_name",
+            "description": "供应商名称，当发货来源为供应商直发时的供应商信息"
+        },
+        {
+            "name": "handover_date",
+            "description": "交接日期，发货交接的实际日期"
+        },
+        {
+            "name": "status",
+            "description": "状态，发货交接的状态，可能的值包括：pending（待交接）、completed（已完成）、cancelled（已取消）"
+        }
+    ],
+    "example": [
+        {
+            "handover_id": "HO20251010",
+            "shipment_id": "SH20251007",
+            "order_id": "SO20251003",
+            "product_name": "高性能服务器",
+            "quantity": 30,
+            "delivery_source": "inventory",
+            "supplier_name": "-",
+            "handover_date": "2025-10-10",
+            "status": "completed"
+        }
+    ]
+}
