@@ -8,48 +8,9 @@ from utils.whiteboard import Whiteboard
 from utils.logger import setup_logger
 from models.llm import get_llm_response_gpt_4o
 
-# 初始化logger
 logger = setup_logger('mcp_server')
 
 mcp = FastMCP("hgt2.0工具")
-
-
-@mcp.tool()
-def database_search(query: Annotated[str, Field(description="用户查询")],
-            data_source: Annotated[Optional[str], Field(description="数据来源")],
-            table_name: Annotated[Optional[str], Field(description="数据模型名称")],
-            metric: Annotated[Optional[str], Field(description="指标名称")],
-            ) -> str:
-    """
-    从关系型数据库、数据仓库或 BI 系统中获取结构化数据。
-    """
-    logger.info("开始执行data_query工具 - 查询数据")
-    return f"查询数据: {query}"
-
-@mcp.tool()
-def oa_search(query: Annotated[str, Field(description="用户查询")]) -> str:
-    """
-    查询中控技术公司OA系统并返回查询结果，OA系统可查询人员信息、公司发文通知、审批流程（如报销等）；查询方式：通过关键词进行搜索
-    """
-    logger.info("开始执行oa_data_query工具 - 查询OA数据")
-    return f"查询OA数据: {query}"
-
-@mcp.tool()
-def kms_search(query: Annotated[str, Field(description="用户查询")]) -> str:
-    """
-    查询中控技术公司KMS知识库并返回查询结果，kms是中控所有知识汇聚平台。kms包含公司战略品牌（包括企业文化、公司品牌管理、宣传、战略规划等文档、视频素材知识）、产品（工业软件、控制系统、仪器仪表、配置模板、生态产品等产品知识）、解决方案（包括解决方案专家标准动作、解决方案图谱、行业解决方案、通用解决方案、行业知识沉淀、多元生态融合等解决方案相关知识）、工程服务、管理（文件管理、人力资源、数字化流程、专利、软著、质量运营、荣誉、资质、供应链、办公、读书会等管理相关知识）、百科（产品、技术、行业、管理、营销等概念知识）、营销（合同模板、投标资料、客户案例、营销培训、产品行业解决方案宣传资料等）、数字化（IT、AI、crm、srm、sap、mes、erp、bpm等数字化相关知识）等各方面知识库；查询方式：kms知识库的数据已通过向量化存入库中，可以通过语义匹配进行查询，因此搜索时可以保留问题语义意图等
-
-    """
-    logger.info("开始执行search_database工具 - 搜索数据库")
-    return f"搜索数据库: {query}"
-
-@mcp.tool()
-def bpm_search(query: Annotated[str, Field(description="用户查询")]) -> str:
-    """
-    查询中控技术公司BPM业务系统的流程单据，bpm是公司客户管理、CRM、销售管理、物料主数据、工程业务管理、售后服务管理、固定资产管理、辅助办公管理、人员绩效管理的业务系统，流转的是流程、单据；查询方式：通过关键词进行搜索
-    """
-    logger.info("开始执行bpm_data_query工具 - 查询BPM数据")
-    return f"查询BPM数据: {query}"
 
 @mcp.tool()
 def web_search(query: Annotated[str, Field(description="用户查询")]) -> str:
@@ -58,14 +19,6 @@ def web_search(query: Annotated[str, Field(description="用户查询")]) -> str:
     """
     logger.info("开始执行web_search工具 - 搜索互联网")
     return f"搜索互联网: {query}"
-
-@mcp.tool()
-def org_qa(query: Annotated[str, Field(description="用户查询")]) -> str:
-    """
-    查询精确的员工个人信息、组织架构信息，查询范围如下：[\"张三是谁\",\"张三的部门\",\"张三的直接上级\",\"张三的直接下级\",\"**部门有哪些子部门\", \"**部门的领导是谁\"]；查询方式：org_qa是一个问答系统，可通过自然语言查询员工信息，组织架构信息等
-    """
-    logger.info("开始执行org_qa工具 - 查询组织架构")
-    return f"查询组织架构: {query}"
 
 
 @mcp.tool(name="think", exclude_args=["whiteboard_id"])
@@ -97,19 +50,29 @@ def think_tool(reason: Annotated[str, Field(description="思考和推理的原�
     logger.info("whiteboard_info: %s", whiteboard_info_str)
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": prompt.format(whiteboard_info=whiteboard_info_str)}
+        {"role": "user", "content": prompt.format(whiteboard_info=whiteboard_info_str, reason=reason)}
     ]
     result = get_llm_response_gpt_4o(messages) 
     logger.info(f"LLM思考结果: {result}")
     logger.info(f"LLM思考推理完成，结果长度: {len(result)}")
     
-    return result["content"]
+    return result
 
 @mcp.tool(name="search_database")
 def search_database_tool(tables: Annotated[list[str], Field(description="要查询的数据库表名")], query: Annotated[str, Field(description="自然语言查询语句")]) -> str:
     """
-    根据自然语言在指定表上进行数据库搜索。可接受一个或多个表名作为输入，内部会自动定位对应数据库和schema，并生成SQL执行查询。
+    根据自然语言在指定表上进行数据库搜索。可接受一个或多个表名作为输入，内部会自动定位对应数据库和schema，并生成SQL执行查询。该工具只擅长具体字段与表的查询，不擅长推理或解释。请 master 生成清晰、具体、可查询的 query。
     
+    instructions_for_master:
+    请确保 query 明确包含：查询对象（如合同、订单、出库单、发货申请等）、限定条件（如编号、时间、客户等）以及要返回的具体字段。",
+    "不要在 query 中使用模糊的词语，如“原因”、“异常”、“状态不对”等抽象表达。请改写成具体查询，例如：",
+    " ❌查询合同编号为 X 的合同状态和原因",
+    " ✅查询合同编号为 X 的最新合同状态字段，以及合同状态变更日志中的最新一条记录",
+    " ✅查询销售订单编号为 X 的发货申请审批状态字段",
+    " ✅查询发货申请编号为 X 的出库单是否已生成及过账状态",
+    "如需分析异常，请将问题分解成多个清晰的数据库查询，分别查询状态、审批记录、物流单据、入库单、签收单等表。",
+    "如果一个字段含义不明确（如 '状态' 可能指审批状态或发货状态），请在 query 中指明业务上下文（如 '审批状态' 或 '收货状态'）。
+
     Args:
         query (str): 自然语言查询语句
         table_name (str): 要查询的数据库表名
@@ -121,7 +84,8 @@ def search_database_tool(tables: Annotated[list[str], Field(description="要查�
 
     result = search_database(tables, query)
     logger.info(f"数据库查询结果: {result}")
-    return result
+    # 工具返回类型声明为字符串，这里将结果转为JSON字符串以通过输出校验
+    return json.dumps(result, ensure_ascii=False)
 
 @mcp.tool(name="todo_write")
 def todo_write_tool(action: Annotated[Literal["todo_create", "todo_complete", "todo_failure", "todo_show"], Field(description="要执行的操作类型：\n"
@@ -131,22 +95,26 @@ def todo_write_tool(action: Annotated[Literal["todo_create", "todo_complete", "t
                     "- todo_show: 查看当前 DAG")],
     todo_text: Annotated[Optional[str], Field(description="当 action=todo_create 时提供，"
                     "LLM 输出的任务描述文本，格式为：\n"
-                    "任务描述：<任务描述>\n"
-                    "依赖任务：<依赖任务1>, <依赖任务2>, ...\n"
-                    "示例：\n"
-                    "任务描述：完成项目文档\n"
-                    "依赖任务：项目计划, 项目需求")]=None,
+                    "level 1\n[] task_0: *** dependency []\n"
+                    "level 2\n[] task_1: *** dependency [task_0]\n[] task_2: *** dependency [task_0]\n"
+                    "level 3\n[] task_3: *** dependency [task_2]\n"
+                    "level 4\n[] task_4: *** dependency [task_1, task_3]\n")]=None,
     task_id: Annotated[Optional[str], Field(description="当 action=todo_complete, todo_failure 时提供，"
-                    "要操作的任务 ID")]=None):
+                    "要操作的任务 ID")]=None) -> str:
     """
     管理一个带有依赖关系（DAG）的任务清单。
     支持创建、完成、标记失败、查看等操作。
     可用于LLM自主规划和追踪任务执行状态。
+
+    无论创建、完成、标记失败等动作，tool执行后都会返回完整的任务DAG及状态。
     """
-    from tools.todo import todo_write
-    result = todo_write(action, todo_text, task_id)
+    from tools.todo import todo_tool
+    result = todo_tool(action, todo_text, task_id)
     logger.info(f"todo_write操作结果: {result}")
-    return result
+    # 统一返回字符串，避免输出校验错误
+    if isinstance(result, str):
+        return result
+    return json.dumps(result, ensure_ascii=False)
 
 
 @mcp.tool(name="natural_language_sum")
@@ -166,4 +134,6 @@ def sum_with_nl_tool(query: Annotated[str, Field(description="自然语言求和
     
 
 if __name__ == "__main__":
-    mcp.run(transport="http", port=3458)
+    # 支持通过环境变量配置端口，便于并行验证与热重启
+    port = int(os.getenv("MCP_PORT", "3459"))
+    mcp.run(transport="http", port=port)

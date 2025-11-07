@@ -1,17 +1,17 @@
 from fastmcp import Client
 import asyncio
-
-
-
+import os   
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv())
 
 async def get_available_tools_async():
-    async with Client("http://127.0.0.1:3458/mcp") as client:
+    async with Client(os.getenv("MCP_SERVER_URL")) as client:
         tools = await client.list_tools()
         return tools
         
 
 async def call_tool(function_name: str, function_args: dict):
-    async with Client("http://127.0.0.1:3458/mcp") as client:
+    async with Client(os.getenv("MCP_SERVER_URL")) as client:
         result = await client.call_tool(function_name, function_args)
         return result.content[0].text
 

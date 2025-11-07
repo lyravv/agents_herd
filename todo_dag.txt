@@ -1,0 +1,8 @@
+level 1
+✗ task_0: 查询合同SCJSD20231226-SCGLB01关联的销售订单信息 dependency []
+level 2
+✗ task_1: 查询销售订单的状态和相关发货申请单的处理情况 dependency [task_0]
+[] task_2: 查询发货申请单状态，确认出库单或货物交接单的生成情况 dependency [task_0]
+level 3
+[] task_3: 检查出库单或货物交接单状态，确认是否生成出库数量 dependency [task_2]
+[] task_4: 在供应商直发情况下，检查签收单状态 dependency [task_2]

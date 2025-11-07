@@ -112,6 +112,8 @@ def get_llm_response_gpt_4o_with_tools(messages, tools=None):
         }
 
 
+
+
 if __name__ == "__main__":
     # messages1 = [
     #     {"role": "system", "content":  "你是一个专业的法律问答助手"},
