@@ -152,7 +152,7 @@ def case2():
     """
     
     messages = [
-        {"role": "system", "content": "你是一个工具调用专家。通过链式的工具调用和观察工具调用的结果，最终回答用户的问题。当你觉得有足够信息回答用户问题时候，直接回答用户问题，不需要再调用工具。"},
+        {"role": "system", "content": "你是一个工具调用专家。通过链式的工具调用和观察工具调用的结果，最终回答用户的问题。当你觉得有足够信息回答用户问题时候，直接回答用户问题，不需要再调用工具。如果碰到计算，你必须调用工具计算，不允许自己计算。你必须在工具调用时通过<think>...</think>来思考。"},
         {"role": "user", "content": input},
         {
             "role": "assistant", 
@@ -191,26 +191,26 @@ def case2():
             "role": "tool",
             "tool_call_id": "call_sales_contract_tool_001",
             "content": retrive_content
-        },
-        {
-            "role": "assistant", 
-            "content": None,
-            "tool_calls": [
-                {
-                    "id": "call_sum_with_nl_tool_001",
-                    "type": "function",
-                    "function": {
-                        "name": "sum_with_nl_tool",
-                        "arguments": retrive_content
-                    }
-                }
-            ]
-        },
-        {
-            "role": "tool",
-            "tool_call_id": "call_sum_with_nl_tool_001",
-            "content": "6150000"
         }
+        # {
+        #     "role": "assistant", 
+        #     "content": None,
+        #     "tool_calls": [
+        #         {
+        #             "id": "call_sum_with_nl_tool_001",
+        #             "type": "function",
+        #             "function": {
+        #                 "name": "sum_with_nl_tool",
+        #                 "arguments": retrive_content
+        #             }
+        #         }
+        #     ]
+        # },
+        # {
+        #     "role": "tool",
+        #     "tool_call_id": "call_sum_with_nl_tool_001",
+        #     "content": "6150000"
+        # }
     ]
 
     tools = [

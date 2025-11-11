@@ -6,8 +6,8 @@ from utils.logger import setup_logger
 
 load_dotenv(find_dotenv())
 
-# 初始化logger
-logger = setup_logger('llm')
+# 初始化logger，统一通过utils.logger控制控制台开关
+logger = setup_logger('llm', enable_console=False)
 
 def get_llm_response_gpt_4o(messages):
     LLM_URL = os.getenv("BASE_URL", "https://api.apiyi.com/v1") + "/chat/completions"

@@ -135,6 +135,12 @@ def get_table_relations(table_names: List[str]) -> Dict:
     return {"relations": result}
 
 def search_database(tables: List[str], query: str):
+    # 基础入参校验，避免空列表或空查询导致运行时异常
+    if not isinstance(tables, list) or len(tables) == 0:
+        return {"error": "未提供查询表名，请至少提供一个表名。"}
+    if not isinstance(query, str) or not query.strip():
+        return {"error": "未提供有效的查询语句，请提供清晰、具体的查询描述。"}
+
     # Step 1: 获取每个表的数据库信息
     table_info = [get_table_and_db_path_and_schema(t) for t in tables]
     if None in table_info:
@@ -184,7 +190,11 @@ def search_database(tables: List[str], query: str):
     sql = quote_sql_identifiers(sql, all_fields)
     print(sql)
     # Step 4: 执行 SQL
-    db_path = table_info[0]["db_path"]
+    # 更稳健地获取唯一的数据库路径（避免空列表越界）
+    try:
+        db_path = next(iter(db_paths))
+    except StopIteration:
+        return {"error": "无法确定数据库路径，请检查表配置。"}
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()

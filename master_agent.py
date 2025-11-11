@@ -2,6 +2,7 @@ from utils.whiteboard import Whiteboard
 from models.llm import get_llm_response_gpt_4o_with_tools
 # from graph.graph_match import graph_match
 # from memory.long_term_memory import experience_match
+import os
 import json
 import asyncio
 from models import llm_openai
@@ -9,7 +10,7 @@ from tools.mcp_client import get_available_tools_async, convert_mcp_tool_to_open
 from utils.logger import setup_logger
 
 
-logger = setup_logger('master_tracer')
+logger = setup_logger('master_tracer', enable_console=False)
 
 # master_agent_system_prompt = f"""
 # 你是一个严谨的智能助手，你会通过工具调用来思考、规划、获取足够的信息来解决用户的问题。
@@ -50,14 +51,14 @@ class MasterAgent:
 
     def llm_step(self) -> str:
         messages = self.whiteboard.read()
-        print(f"messages: {messages}")
+        # logger.info(f"messages: {messages}")
         mcp_tools = asyncio.run(get_available_tools_async())
-        print(f"可用工具: {mcp_tools}")
+        # logger.info(f"可用工具: {mcp_tools}")
         tools = [convert_mcp_tool_to_openai(tool.__dict__) for tool in mcp_tools]
 
         messages = [{"role": "system", "content": master_agent_system_prompt}] + messages
         response = get_llm_response_gpt_4o_with_tools(messages, tools)
-        print(f"LLM响应: {response}")
+        # logger.info(f"LLM响应: {response}")
         return response
 
     def execute_tool_calls(self, response: dict) -> dict:
@@ -96,7 +97,7 @@ class MasterAgent:
             logger.info(f"messages append: {llm_result}")
             self.whiteboard.append(llm_result)
             tool_execution_results = self.execute_tool_calls(llm_result)
-            print(f"工具调用结果: {tool_execution_results}")
+            # logger.info(f"工具调用结果: {tool_execution_results}")
             for result in tool_execution_results:
                 self.whiteboard.append(result)
                 logger.info(f"messages append: {result}")
@@ -115,7 +116,7 @@ class MasterAgent:
 
 def _build_priori_knowledge_payload() -> list[dict]:
     """构造预召回数据的tool消息，自动选择可用数据源，返回两条消息。"""
-    import os
+    
     payload_parts = []
     # 优先尝试data_2目录
     base1 = "/home/wangling/projects/agents_herd/data_2"
@@ -123,35 +124,26 @@ def _build_priori_knowledge_payload() -> list[dict]:
     relations_json1 = os.path.join(base1, "relations.json")
     flow_md1 = os.path.join(base1, "flowchat.md")
     human_md1 = os.path.join(base1, "human_experience.md")
+    # exp_rules = os.path.join(base1, "experience.csv")
 
     # 备用：table_ontology_simulation目录
     base2 = "/home/wangling/projects/agents_herd/data/table_ontology_simulation"
     tables_json2 = os.path.join(base2, "tables.json")
     relations_json2 = os.path.join(base2, "relation.json")
 
-    def _safe_json(path):
-        try:
-            if os.path.exists(path):
-                return json.dumps(json.load(open(path, encoding="utf-8")), ensure_ascii=False, indent=2)
-        except Exception:
-            return None
-        return None
-
-    def _safe_text(path):
-        try:
-            if os.path.exists(path):
-                return open(path, encoding="utf-8").read()
-        except Exception:
-            return None
-        return None
+    import utils.safe_file as safe_file
+    _safe_json = safe_file._safe_json
+    _safe_text = safe_file._safe_text
 
     # 尝试加载
     graph_retrive_result = _safe_json(tables_json1) or _safe_json(tables_json2) or ""
     relations_result = _safe_json(relations_json1) or _safe_json(relations_json2) or ""
     flowchart = _safe_text(flow_md1) or ""
     human_experience = _safe_text(human_md1) or ""
+    # experience_rules = _safe_text(exp_rules) or ""
 
-    if not any([graph_retrive_result, relations_result, flowchart, human_experience]):
+    # if not any([graph_retrive_result, relations_result, flowchart, human_experience, experience_rules]):
+    if not any([graph_retrive_result, relations_result, flowchart, human_experience, ]):
         return []
 
     priori_knowlege_retrive_result = (
@@ -159,6 +151,8 @@ def _build_priori_knowledge_payload() -> list[dict]:
         (f"表格链接键:\n{relations_result}\n\n" if relations_result else "") +
         (f"流程图表:\n{flowchart}\n\n" if flowchart else "") +
         (f"人类经验:\n{human_experience}" if human_experience else "")
+        # (f"人类经验:\n{human_experience}\n\n" if human_experience else "") +
+        # (f"业务判断规则:\n{experience_rules}" if experience_rules else "")
     ).strip()
 
     tool_call_id = "call_priori_knowlege_retrive_tool_auto"
@@ -183,6 +177,56 @@ def _build_priori_knowledge_payload() -> list[dict]:
             "content": priori_knowlege_retrive_result
         }
     ]
+
+def _build_priori_knowledge_payload_with_hypergraph() -> list[dict]:
+    graph_file = "/home/wangling/projects/hgt-2-hypergraph/preprocess/hyper_schema_workflow.json"
+    human_md1 = os.path.join("/home/wangling/projects/agents_herd/data_2", "human_experience.md")
+    flow_md1 = os.path.join("/home/wangling/projects/agents_herd/data_2", "flowchat.md")
+
+    import utils.safe_file as safe_file
+    _safe_json = safe_file._safe_json
+    _safe_text = safe_file._safe_text
+
+    graph_retrive_result = _safe_json(graph_file) or ""
+    human_experience = _safe_text(human_md1) or ""
+    flowchart = _safe_text(flow_md1) or ""
+
+    priori_knowlege_retrive_result = f"""
+    数据表、表格链接键、业务流程、业务规则构成的相关超图:
+    {json.dumps(graph_retrive_result, ensure_ascii=False, indent=2)}
+    
+    业务流程:
+    {flowchart}
+
+    人类经验:
+    {human_experience}
+    """
+
+    tool_call_id = "call_priori_knowlege_retrive_tool_auto"
+    return [
+        {
+            "role": "assistant",
+            "content": None,
+            "tool_calls": [
+                {
+                    "id": tool_call_id,
+                    "type": "function",
+                    "function": {
+                        "name": "priori_knowlege_retrive_tool",
+                        "arguments": ""
+                    }
+                }
+            ]
+        },
+        {
+            "role": "tool",
+            "tool_call_id": tool_call_id,
+            "content": priori_knowlege_retrive_result
+        }
+    ]
+
+
+
 
 
 if __name__ == "__main__":
@@ -211,11 +255,14 @@ if __name__ == "__main__":
             continue
         if query.lower() in (":recall", "recall"):
             payload = _build_priori_knowledge_payload()
+            # payload = _build_priori_knowledge_payload_with_hypergraph()
             if payload:
                 logger.info(f"messages append: {payload}")
                 whiteboard.append(payload[0])
                 whiteboard.append(payload[1])
                 print("已注入预召回数据")
+                # print(payload[0])
+                # print(payload[1])
             else:
                 print("未找到可用的预召回数据文件")
             continue
